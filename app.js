@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const request = require('request-promise')
 const cheerio = require('cheerio')
 const NodeCache = require( "node-cache" );
+const url = require('url');
 
 const myCache = new NodeCache();
 
@@ -14,12 +15,21 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 const findMoveinMoveList = (moveId, moveList) => {
     for (let move of moveList) {
-        if(move.id === moveId)
+        if(move.id.toLowerCase() === moveId.toLowerCase())
         {
             return { id: move.id, title: move.title, sequence: move.sequence };
         }
     }
     return "Requested Move Doesnt Exist"
+}
+
+const findNextMove = (moveId,moveList,path) => {
+    let move = findMoveinMoveList(moveId, moveList);
+    let moves = move.sequence.toLowerCase().split(" ").filter(function (e) {
+        return e.length > 1;
+    });
+    console.log(moves)
+    return moves[moves.indexOf(path.at(-1).toLowerCase()) + 1]
 }
 
 app.get('/', (req, res, next) => {
@@ -96,6 +106,51 @@ app.get('/:moveId', function (req, res) {
     });
    }
 })
+
+app.get('/:moveId/*', function (req, res) {
+
+    var path = url.parse(req.url).pathname;
+
+    // split and remove empty element;
+    path = path.split('/').filter(function (e) {
+        return e.length > 0;
+    });
+
+    // remove the first component 'callmethod'
+    path = path.slice(1);
+
+    if(myCache.has('moveList')){
+        res.send(findNextMove(req.params.moveId, myCache.get('moveList'),path))
+    }else{
+          
+        request("https://www.chessgames.com/chessecohelp.html", (error, response, html) => {
+        if(!error && response.statusCode==200) {
+            const $= cheerio.load(html);
+            const listItems = $("tr");
+            const moves = [];
+            listItems.each((idx, el) => {
+            const move = { id: "", title: "", sequence:"" };
+              const font = $(el).find("td")
+              font.each((index, td) => {
+                if(index === 0)
+                {
+                    move.id = $(td).children("font").text()
+                }
+                else{
+                    move.title = $(td).children("font").children("b").text()
+                    move.sequence = $(td).children("font").children("font").text()
+                }
+              })
+              moves.push(move)
+            });
+            myCache.set('moveList', moves, 180)
+            res.send(findNextMove(req.params.moveId, moves,path))
+
+        }
+    });
+   }
+})
+
 
 const PORT = process.env.PORT ||5000;
  
