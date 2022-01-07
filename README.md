@@ -1,6 +1,6 @@
-## Chess Moves APP
+## Chess EOS Table Memorizer
 
-You can see a hosted version of `The node.js example app` on <a href="https://the-example-app-nodejs.contentful.com/" target="_blank">Heroku</a>.
+You can see a hosted version of `Chess EOS Table Memorizer` on <a href="https://chess-eos-table-memorizer.herokuapp.com/" target="_blank">Heroku</a>.
 
 ## Requirements
 
