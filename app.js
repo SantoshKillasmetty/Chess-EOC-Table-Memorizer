@@ -119,6 +119,8 @@ app.get('/:moveId/*', function (req, res) {
     // remove the first component 'callmethod'
     path = path.slice(1);
 
+    console.log(path)
+
     if(myCache.has('moveList')){
         res.send(findNextMove(req.params.moveId, myCache.get('moveList'),path))
     }else{
