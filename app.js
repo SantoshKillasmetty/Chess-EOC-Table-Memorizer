@@ -29,7 +29,7 @@ const findNextMove = (moveId,moveList,path) => {
         return e.length > 1;
     });
     console.log(moves)
-    return moves[moves.indexOf(path.at(-1).toLowerCase()) + 1]
+    return moves[moves.indexOf(path[path.length - 1].toLowerCase()) + 1]
 }
 
 app.get('/', (req, res, next) => {
